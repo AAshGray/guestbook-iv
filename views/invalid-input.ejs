@@ -8,8 +8,12 @@
 </head>
 <body class="invalid">
     <h1>Invalid Input!</h1><br>
-    <p><%= result %></p>
-
+        <ul style="none">
+            <% for (let i = 0; i < result.errors.length; i++) { %>
+                <li><%= result.errors[i] %></li>
+            <% } %>
+        </ul>
+    <br>   
     <p>Return home and try again?</p><br>
     <button id="confirmbutton" onclick="window.location.href='/'">Home</button>
     <button id="confirmbutton" onclick="window.location.href='/admin'">Admin</button>

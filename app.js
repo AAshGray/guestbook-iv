@@ -45,9 +45,6 @@ app.get('/', (req, res) => {
 });
 
 app.post('/submit', async (req, res) => {
-    function isValid(field) {
-        return field.trim() !== "";
-    }
 
     const page = {
         fname: req.body.fname,
@@ -70,17 +67,19 @@ app.post('/submit', async (req, res) => {
 
 
     // check for errors and return the errors page if so
-    const result = validateForm(order);
+    const result = validateForm(page);
     if(!result.isValid) {
         console.log(result.errors);
-        
         res.render('invalid-input', { result });
+
+        // return so bad data is not entered into database
         return;
     }
 
     // otherwise connect to the db
     const conn = await connect();
 
+    // add data to table
     const insertQuery = await conn.query(`insert into entries (fname, lname, jobtitle, company, linkedin, email, meet, other, message, mailing_list, format)
         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [page.fname, page.lname, page.jobtitle, page.company, page.linkedin, page.email, page.meet, page.other, page.message, page.mailing_list, page.format]
@@ -90,6 +89,7 @@ app.post('/submit', async (req, res) => {
 });
 
 app.get('/admin', (req, res) => {
+    
     res.render('admin', { guestbook });
 });
 

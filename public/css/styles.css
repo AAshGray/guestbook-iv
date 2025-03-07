@@ -144,3 +144,9 @@ button {
 #thank-you h1, p{
     padding: 8px;
 }
+
+ul {
+    list-style-type: none;
+    color: red;
+}
+
