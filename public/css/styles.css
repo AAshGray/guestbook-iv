@@ -150,3 +150,11 @@ ul {
     color: red;
 }
 
+.required-field {
+    color: red;
+}
+
+#other {
+    margin-top: 18px;
+
+}

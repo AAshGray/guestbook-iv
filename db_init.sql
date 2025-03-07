@@ -20,4 +20,7 @@ create table entries(
 
 insert into entries (fname, lname, jobtitle, company, linkedin, email, meet, other, message, mailing_list, format)
 values ('Test', 'Entry', 'QA', 'Big Corp Inc.', 'linkedin/testentry.com', 'test@bigcorp.com', 'meetup', 'text', 'Hello World', 0, 'HTML');
+
+insert into entries (fname, lname, jobtitle, company, linkedin, email, meet, other, message, mailing_list, format)
+values ('William', 'Woods', 'CEO', 'Forest Co.', 'linkedin/Willwo.com', 'test@forestco.co', 'meetup', 'text', 'text', 1, 'Text');
     

@@ -88,8 +88,15 @@ app.post('/submit', async (req, res) => {
     res.render('thank-you', { page });
 });
 
-app.get('/admin', (req, res) => {
-    
+app.get('/admin', async (req, res) => {
+    //Connect to the database
+    const conn = await connect();
+
+    //Query the database
+    const guestbook = await conn.query('SELECT * FROM entries');
+
+    console.log(guestbook);
+
     res.render('admin', { guestbook });
 });
 
