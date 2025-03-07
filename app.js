@@ -1,5 +1,35 @@
-import express from 'express'
+import express from 'express';
+import mariadb from 'mariadb';
+import dotenv from 'dotenv';
+import { validateForm } from './services/validation.js'
 
+// set up config
+dotenv.config();
+
+// configure database connections
+const pool = mariadb.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
+    port: process.env.DB_PORT
+});
+
+// set up app port
+const PORT = process.env.APP_PORT || 3000;
+
+// set up database connection function
+async function connect() {
+    try {
+        const conn = await pool.getConnection();
+        console.log('Connected to the database!');
+        return conn;
+    } catch (err) {
+        console.log(`Error connecting to the database ${err}`);
+    }
+}
+
+// set up express
 const app = express();
 
 app.use(express.urlencoded( { extended: true }));
@@ -8,15 +38,13 @@ app.use(express.static('public'));
 
 app.set('view engine', 'ejs');
 
-const guestbook = [];
 
-const PORT = 3000;
-
+// routes
 app.get('/', (req, res) => {
     res.render(`home`);
 });
 
-app.post('/submit', (req, res) => {
+app.post('/submit', async (req, res) => {
     function isValid(field) {
         return field.trim() !== "";
     }
@@ -31,35 +59,33 @@ app.post('/submit', (req, res) => {
         meet: req.body.meet,
         other: req.body.other,
         message: req.body.message,
-        mailing_list: req.body.mailing_list,
+        // mailing list is yes or no, so this is set to 0 or 1 (boolean)
+        mailing_list: req.body.mailing_list ? 1 : 0,
         format: req.body.format,
         timestamp: new Date()
     };
+    
+    //check if page was correctly built
+    console.log(page);
 
-    if(!isValid(page.fname) || !isValid(page.lname) || !isValid(page.email)) {
-        const invalid = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Confirmation</title>
-            <link rel="stylesheet" href="/css/styles.css">
-        </head>
-        <body class="invalid">
-            <h1>Invalid Input!</h1><br>
-            <p>Return home and try again?</p><br>
-            <button id="confirmbutton" onclick="window.location.href='/'">Home</button>
-            <button id="confirmbutton" onclick="window.location.href='/admin'">Admin</button>
-        </body>
-        </html>`;
-        res.send(invalid);
+
+    // check for errors and return the errors page if so
+    const result = validateForm(order);
+    if(!result.isValid) {
+        console.log(result.errors);
+        
+        res.render('invalid-input', { result });
         return;
     }
 
-    guestbook.push(page);
-    console.log(page);
+    // otherwise connect to the db
+    const conn = await connect();
 
+    const insertQuery = await conn.query(`insert into entries (fname, lname, jobtitle, company, linkedin, email, meet, other, message, mailing_list, format)
+        values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [page.fname, page.lname, page.jobtitle, page.company, page.linkedin, page.email, page.meet, page.other, page.message, page.mailing_list, page.format]
+    );
+    
     res.render('thank-you', { page });
 });
 
